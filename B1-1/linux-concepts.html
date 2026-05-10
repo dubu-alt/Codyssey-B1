@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux 개념 시각화</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --card: #1b1f2b;
+    --border: #252a38;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --accent4: #10b981;
+    --accent5: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Noto Sans KR', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    padding: 60px 40px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0a0c12 0%, var(--bg) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 200px;
+    background: radial-gradient(ellipse, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  header h1 span {
+    color: var(--accent);
+  }
+  header p {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    background: rgba(13,15,20,0.95);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+  }
+  nav a {
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  nav a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.05);
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+
+  /* SECTION */
+  section {
+    scroll-margin-top: 80px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  /* ===== 1. 파일시스템 ===== */
+  .fs-tree {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .fs-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .fs-row:hover { background: rgba(255,255,255,0.04); }
+  .fs-indent-1 { padding-left: 28px; }
+  .fs-indent-2 { padding-left: 52px; }
+  .fs-name { color: var(--accent); font-weight: 700; }
+  .fs-name.dir { color: #60a5fa; }
+  .fs-name.special { color: var(--accent5); }
+  .fs-desc { color: var(--muted); font-size: 0.78rem; font-family: var(--sans); }
+  .fs-badge {
+    margin-left: auto;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-mission { background: rgba(0,229,255,0.12); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+  .badge-log { background: rgba(16,185,129,0.12); color: var(--accent4); border: 1px solid rgba(16,185,129,0.2); }
+  .badge-cfg { background: rgba(245,158,11,0.12); color: var(--accent5); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* ===== 2. 사용자/그룹 ===== */
+  .ug-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media(max-width:600px){ .ug-grid { grid-template-columns: 1fr; } }
+  .ug-card {
+    border-radius: 8px;
+    padding: 18px;
+    border: 1px solid var(--border);
+  }
+  .ug-card.admin { border-color: rgba(0,229,255,0.3); background: rgba(0,229,255,0.04); }
+  .ug-card.dev   { border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.04); }
+  .ug-card.test  { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04); }
+  .ug-card.group { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.04); }
+  .ug-name { font-family: var(--mono); font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; }
+  .ug-name.admin { color: var(--accent); }
+  .ug-name.dev   { color: #a78bfa; }
+  .ug-name.test  { color: var(--accent5); }
+  .ug-name.group { color: var(--accent4); }
+  .ug-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin: 2px 2px 0 0;
+    font-family: var(--mono);
+  }
+  .tag-common { background: rgba(16,185,129,0.15); color: var(--accent4); }
+  .tag-core   { background: rgba(0,229,255,0.15); color: var(--accent); }
+  .ug-role { color: var(--muted); font-size: 0.78rem; margin-top: 6px; }
+
+  .group-vis {
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  .group-vis-title { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); margin-bottom: 14px; }
+  .group-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .group-label { font-family: var(--mono); font-size: 0.8rem; color: var(--accent4); width: 140px; flex-shrink: 0; }
+  .group-members { display: flex; gap: 6px; flex-wrap: wrap; }
+  .member-chip {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .chip-admin { color: var(--accent); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.08); }
+  .chip-dev   { color: #a78bfa; border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.08); }
+  .chip-test  { color: var(--accent5); border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+
+  /* ===== 3. 파일 권한 ===== */
+  .perm-vis {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .perm-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .perm-cells {
+    display: flex;
+    gap: 2px;
+  }
+  .perm-cell {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 4px;
+  }
+  .perm-cell.on  { background: rgba(0,229,255,0.15); color: var(--accent); border: 1px solid rgba(0,229,255,0.3); }
+  .perm-cell.off { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+  .perm-label { font-size: 0.68rem; color: var(--muted); font-family: var(--mono); text-align: center; }
+  .perm-sep { color: var(--border); font-size: 1.2rem; padding: 0 4px; margin-top: -14px; }
+
+  .perm-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; margin-top: 16px; }
+  .perm-table th { color: var(--muted); font-weight: 400; padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  .perm-table td { padding: 8px 10px; border-bottom: 1px solid rgba(37,42,56,0.5); }
+  .perm-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .num-badge { display: inline-block; background: rgba(0,229,255,0.1); color: var(--accent); padding: 2px 8px; border-radius: 4px; }
+
+  /* ===== 4. 프로세스 ===== */
+  .proc-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+  .proc-box {
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 110px;
+    background: var(--surface);
+  }
+  .proc-box .icon { font-size: 1.4rem; margin-bottom: 4px; }
+  .proc-box .label { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .proc-box .val { font-size: 0.85rem; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+  .proc-arrow {
+    color: var(--muted);
+    font-size: 1.2rem;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .proc-cmd {
+    margin-top: 16px;
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    line-height: 1.8;
+  }
+  .cmd-comment { color: var(--muted); }
+  .cmd-bin { color: var(--accent2); }
+  .cmd-flag { color: var(--accent5); }
+  .cmd-val { color: var(--accent4); }
+
+  /* ===== 5. 네트워크/포트 ===== */
+  .net-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .net-node {
+    text-align: center;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    min-width: 110px;
+  }
+  .net-node .n-icon { font-size: 2rem; margin-bottom: 6px; }
+  .net-node .n-label { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .net-node .n-val { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+  .net-arrow-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 12px;
+    gap: 4px;
+  }
+  .net-line { width: 80px; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent4)); border-radius: 2px; }
+  .net-port {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    background: rgba(0,229,255,0.1);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,229,255,0.2);
+  }
+  .port-table { margin-top: 20px; width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .port-table th { background: rgba(255,255,255,0.03); color: var(--muted); font-weight: 400; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+  .port-table td { padding: 10px 12px; border-bottom: 1px solid rgba(37,42,56,0.5); font-family: var(--mono); font-size: 0.78rem; }
+  .port-allow { color: var(--accent4); }
+  .port-deny  { color: #f87171; }
+
+  /* ===== 6. SSH ===== */
+  .ssh-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media(max-width:580px){ .ssh-compare { grid-template-columns: 1fr; } }
+  .ssh-box { border-radius: 8px; padding: 18px; border: 1px solid; }
+  .ssh-box.bad  { border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.05); }
+  .ssh-box.good { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.05); }
+  .ssh-box-title { font-size: 0.72rem; font-family: var(--mono); margin-bottom: 10px; }
+  .ssh-box.bad .ssh-box-title  { color: #f87171; }
+  .ssh-box.good .ssh-box-title { color: var(--accent4); }
+  .ssh-item { font-family: var(--mono); font-size: 0.8rem; padding: 4px 0; display: flex; gap: 8px; }
+  .ssh-item .key { color: var(--muted); }
+  .ssh-item .val-bad  { color: #f87171; }
+  .ssh-item .val-good { color: var(--accent4); }
+  .ssh-reason { margin-top: 16px; color: var(--dim); font-size: 0.8rem; line-height: 1.7; padding: 14px; border: 1px solid var(--border); border-radius: 6px; background: rgba(255,255,255,0.02); }
+
+  /* ===== 7. 방화벽 ===== */
+  .fw-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .fw-layer {
+    width: 100%;
+    max-width: 600px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+  }
+  .fw-layer.internet { border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.06); }
+  .fw-layer.firewall { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.06); }
+  .fw-layer.allow    { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.06); }
+  .fw-layer.deny     { border-color: rgba(100,116,139,0.3); background: rgba(100,116,139,0.05); }
+  .fw-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .fw-text { flex: 1; }
+  .fw-text .main { color: var(--text); font-weight: 700; }
+  .fw-text .sub  { color: var(--muted); font-size: 0.72rem; }
+  .fw-status { font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; white-space: nowrap; }
+  .fw-status.allow { background: rgba(16,185,129,0.15); color: var(--accent4); border: 1px solid rgba(16,185,129,0.3); }
+  .fw-status.deny  { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+  .fw-arrow-down { color: var(--muted); font-size: 0.9rem; text-align: center; }
+
+  /* ===== 8. 환경변수 ===== */
+  .env-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+  @media(max-width:580px){ .env-flow { grid-template-columns: 1fr; } }
+  .env-vars {
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 2;
+  }
+  .env-key { color: var(--accent5); }
+  .env-eq  { color: var(--muted); }
+  .env-val { color: var(--accent4); }
+  .env-mid { text-align: center; color: var(--muted); font-size: 1.5rem; }
+  .env-usage {
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 2;
+    color: var(--dim);
+  }
+  .env-dollar { color: var(--accent); }
+
+  /* ===== 9. Bash 스크립트 ===== */
+  .bash-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media(max-width:600px){ .bash-cards { grid-template-columns: 1fr; } }
+  .bash-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .bash-card-title {
+    background: rgba(255,255,255,0.04);
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .bash-code {
+    padding: 14px;
+    background: #0a0c12;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.9;
+    color: var(--dim);
+  }
+  .bc { color: var(--muted); }          /* comment */
+  .bk { color: #60a5fa; }               /* keyword */
+  .bv { color: var(--accent); }         /* variable */
+  .bs { color: var(--accent4); }        /* string / value */
+  .bf { color: var(--accent2); }        /* function/command */
+
+  /* ===== 10. cron ===== */
+  .cron-vis {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .cron-expr {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .cron-part {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .cron-val {
+    width: 52px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: 1px solid;
+    border-radius: 6px;
+  }
+  .cron-val.active { color: var(--accent); border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.08); }
+  .cron-val.cmd    { color: var(--accent4); border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08); width: auto; padding: 0 14px; font-size: 0.78rem; }
+  .cron-field { font-size: 0.65rem; color: var(--muted); font-family: var(--mono); text-align: center; }
+
+  .cron-timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+  .cron-tick {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .cron-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(0,229,255,0.5);
+  }
+  .cron-time { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .cron-log-line { font-family: var(--mono); font-size: 0.62rem; color: var(--accent4); margin-top: 2px; }
+  .cron-line { flex: 1; min-width: 30px; height: 2px; background: var(--border); }
+
+  /* ===== 11. 로그 ===== */
+  .log-format {
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .log-part {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 2px solid;
+    padding-top: 8px;
+    padding-right: 12px;
+    margin-right: 4px;
+    margin-bottom: 10px;
+  }
+  .log-part.ts    { border-color: var(--accent); }
+  .log-part.pid   { border-color: #a78bfa; }
+  .log-part.cpu   { border-color: var(--accent2); }
+  .log-part.mem   { border-color: var(--accent5); }
+  .log-part.disk  { border-color: var(--accent4); }
+  .log-token { font-family: var(--mono); font-size: 0.85rem; font-weight: 700; }
+  .log-part.ts .log-token   { color: var(--accent); }
+  .log-part.pid .log-token  { color: #a78bfa; }
+  .log-part.cpu .log-token  { color: var(--accent2); }
+  .log-part.mem .log-token  { color: var(--accent5); }
+  .log-part.disk .log-token { color: var(--accent4); }
+  .log-desc { font-size: 0.65rem; color: var(--muted); font-family: var(--mono); }
+
+  .log-sample {
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    line-height: 1.9;
+  }
+  .ls-ts   { color: var(--accent); }
+  .ls-pid  { color: #a78bfa; }
+  .ls-cpu  { color: var(--accent2); }
+  .ls-mem  { color: var(--accent5); }
+  .ls-disk { color: var(--accent4); }
+
+  /* FLOW SUMMARY */
+  .flow-wrap {
+    padding: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+  .flow-title { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); margin-bottom: 24px; text-align: center; }
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 16px;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 90px;
+    max-width: 100px;
+  }
+  .flow-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    border: 1px solid;
+  }
+  .flow-step-label { font-size: 0.68rem; color: var(--muted); font-family: var(--mono); text-align: center; line-height: 1.4; }
+  .flow-connector {
+    width: 30px; height: 2px;
+    background: linear-gradient(90deg, var(--border), var(--accent));
+    flex-shrink: 0;
+    margin-bottom: 20px;
+  }
+
+  .fi-1 { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); }
+  .fi-2 { background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.3); }
+  .fi-3 { background: rgba(255,107,53,0.08); border-color: rgba(255,107,53,0.3); }
+  .fi-4 { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
+  .fi-5 { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); }
+  .fi-6 { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.3); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Linux <span>개념 시각화</span></h1>
+  <p>이번 미션에서 알아야 할 핵심 개념 11가지</p>
+</header>
+
+<nav>
+  <a href="#s1">파일시스템</a>
+  <a href="#s2">사용자/그룹</a>
+  <a href="#s3">파일권한</a>
+  <a href="#s4">프로세스</a>
+  <a href="#s5">네트워크/포트</a>
+  <a href="#s6">SSH보안</a>
+  <a href="#s7">방화벽</a>
+  <a href="#s8">환경변수</a>
+  <a href="#s9">Bash스크립트</a>
+  <a href="#s10">cron</a>
+  <a href="#s11">로그관리</a>
+</nav>
+
+<main>
+
+  <!-- 1. 파일시스템 -->
+  <section id="s1">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">파일 시스템과 디렉토리 구조</span>
+    </div>
+    <div class="card">
+      <div class="fs-tree">
+        <div class="fs-row">
+          <span class="fs-name dir">/</span>
+          <span class="fs-desc">루트 — 리눅스의 최상위 디렉토리. 모든 것의 시작점</span>
+        </div>
+        <div class="fs-row fs-indent-1">
+          <span class="fs-name dir">├── /home/</span>
+          <span class="fs-desc">일반 사용자 홈 디렉토리</span>
+        </div>
+        <div class="fs-row fs-indent-2">
+          <span class="fs-name special">└── agent-admin/agent-app/</span>
+          <span class="fs-desc">AGENT_HOME</span>
+          <span class="fs-badge badge-mission">미션</span>
+        </div>
+        <div class="fs-row fs-indent-1">
+          <span class="fs-name dir">├── /var/</span>
+          <span class="fs-desc">가변 데이터 — 로그, 캐시 등</span>
+        </div>
+        <div class="fs-row fs-indent-2">
+          <span class="fs-name special">└── /var/log/agent-app/</span>
+          <span class="fs-desc">monitor.log 저장 위치</span>
+          <span class="fs-badge badge-log">로그</span>
+        </div>
+        <div class="fs-row fs-indent-1">
+          <span class="fs-name dir">└── /etc/</span>
+          <span class="fs-desc">시스템 설정 파일 모음</span>
+        </div>
+        <div class="fs-row fs-indent-2">
+          <span class="fs-name special">└── /etc/ssh/sshd_config</span>
+          <span class="fs-desc">SSH 설정 파일</span>
+          <span class="fs-badge badge-cfg">설정</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 사용자/그룹 -->
+  <section id="s2">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">사용자와 그룹 관리</span>
+    </div>
+    <div class="card">
+      <div class="ug-grid">
+        <div class="ug-card admin">
+          <div class="ug-name admin">agent-admin</div>
+          <div><span class="ug-tag tag-common">agent-common</span><span class="ug-tag tag-core">agent-core</span></div>
+          <div class="ug-role">운영/관리 · cron 실행자</div>
+        </div>
+        <div class="ug-card dev">
+          <div class="ug-name dev">agent-dev</div>
+          <div><span class="ug-tag tag-common">agent-common</span><span class="ug-tag tag-core">agent-core</span></div>
+          <div class="ug-role">개발/운영 · monitor.sh 작성자</div>
+        </div>
+        <div class="ug-card test">
+          <div class="ug-name test">agent-test</div>
+          <div><span class="ug-tag tag-common">agent-common</span></div>
+          <div class="ug-role">QA/테스트</div>
+        </div>
+        <div class="ug-card group">
+          <div class="ug-name group">그룹 구조</div>
+          <div style="font-size:0.75rem; color:var(--muted); font-family:var(--mono); line-height:1.9;">
+            agent-common = admin + dev + test<br>
+            agent-core &nbsp;&nbsp;= admin + dev
+          </div>
+        </div>
+      </div>
+      <div class="group-vis">
+        <div class="group-vis-title">그룹 멤버십</div>
+        <div class="group-row">
+          <span class="group-label">agent-common</span>
+          <div class="group-members">
+            <span class="member-chip chip-admin">agent-admin</span>
+            <span class="member-chip chip-dev">agent-dev</span>
+            <span class="member-chip chip-test">agent-test</span>
+          </div>
+        </div>
+        <div class="group-row">
+          <span class="group-label">agent-core</span>
+          <div class="group-members">
+            <span class="member-chip chip-admin">agent-admin</span>
+            <span class="member-chip chip-dev">agent-dev</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 파일 권한 -->
+  <section id="s3">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">파일 권한과 ACL</span>
+    </div>
+    <div class="card">
+      <div style="margin-bottom:6px; font-size:0.72rem; color:var(--muted); font-family:var(--mono);">monitor.sh 권한: 750 (rwxr-x---)</div>
+      <div class="perm-vis">
+        <div class="perm-block">
+          <div class="perm-cells">
+            <div class="perm-cell on">r</div>
+            <div class="perm-cell on">w</div>
+            <div class="perm-cell on">x</div>
+          </div>
+          <div class="perm-label">소유자<br>(agent-dev)<br>= 7</div>
+        </div>
+        <div class="perm-sep">|</div>
+        <div class="perm-block">
+          <div class="perm-cells">
+            <div class="perm-cell on">r</div>
+            <div class="perm-cell off">-</div>
+            <div class="perm-cell on">x</div>
+          </div>
+          <div class="perm-label">그룹<br>(agent-core)<br>= 5</div>
+        </div>
+        <div class="perm-sep">|</div>
+        <div class="perm-block">
+          <div class="perm-cells">
+            <div class="perm-cell off">-</div>
+            <div class="perm-cell off">-</div>
+            <div class="perm-cell off">-</div>
+          </div>
+          <div class="perm-label">기타<br>(그 외)<br>= 0</div>
+        </div>
+      </div>
+      <table class="perm-table">
+        <thead>
+          <tr><th>숫자</th><th>권한</th><th>의미</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="num-badge">4</span></td><td>r</td><td style="color:var(--muted)">읽기 (Read)</td></tr>
+          <tr><td><span class="num-badge">2</span></td><td>w</td><td style="color:var(--muted)">쓰기 (Write)</td></tr>
+          <tr><td><span class="num-badge">1</span></td><td>x</td><td style="color:var(--muted)">실행 (Execute)</td></tr>
+          <tr><td><span class="num-badge">7</span></td><td>rwx</td><td style="color:var(--muted)">4+2+1 = 전체 권한</td></tr>
+          <tr><td><span class="num-badge">5</span></td><td>r-x</td><td style="color:var(--muted)">4+1 = 읽기 + 실행</td></tr>
+          <tr><td><span class="num-badge">0</span></td><td>---</td><td style="color:var(--muted)">권한 없음</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. 프로세스 -->
+  <section id="s4">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">프로세스 관리</span>
+    </div>
+    <div class="card">
+      <div class="proc-flow">
+        <div class="proc-box">
+          <div class="icon">💾</div>
+          <div class="label">프로그램</div>
+          <div class="val">agent_app.py</div>
+        </div>
+        <div class="proc-arrow">→</div>
+        <div class="proc-box">
+          <div class="icon">▶</div>
+          <div class="label">실행됨</div>
+          <div class="val">python3</div>
+        </div>
+        <div class="proc-arrow">→</div>
+        <div class="proc-box">
+          <div class="icon">🆔</div>
+          <div class="label">PID 부여</div>
+          <div class="val">48291</div>
+        </div>
+        <div class="proc-arrow">→</div>
+        <div class="proc-box">
+          <div class="icon">📡</div>
+          <div class="label">포트 열림</div>
+          <div class="val">:15034</div>
+        </div>
+      </div>
+      <div class="proc-cmd">
+        <span class="cmd-comment"># 프로세스 검색</span><br>
+        <span class="cmd-bin">pgrep</span> <span class="cmd-flag">-f</span> <span class="cmd-val">agent_app.py</span><br><br>
+        <span class="cmd-comment"># 전체 목록에서 검색</span><br>
+        <span class="cmd-bin">ps</span> <span class="cmd-flag">aux</span> | <span class="cmd-bin">grep</span> <span class="cmd-val">agent_app.py</span><br><br>
+        <span class="cmd-comment"># PID로 종료</span><br>
+        <span class="cmd-bin">kill</span> <span class="cmd-val">48291</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 네트워크/포트 -->
+  <section id="s5">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">네트워크와 포트</span>
+    </div>
+    <div class="card">
+      <div class="net-diagram" style="margin-bottom:20px;">
+        <div class="net-node">
+          <div class="n-icon">💻</div>
+          <div class="n-label">클라이언트</div>
+          <div class="n-val">접속자</div>
+        </div>
+        <div class="net-arrow-wrap">
+          <div class="net-port">:20022 (SSH)</div>
+          <div class="net-line"></div>
+          <div class="net-port">:15034 (APP)</div>
+        </div>
+        <div class="net-node">
+          <div class="n-icon">🖥</div>
+          <div class="n-label">서버</div>
+          <div class="n-val">0.0.0.0 LISTEN</div>
+        </div>
+      </div>
+      <table class="port-table">
+        <thead><tr><th>포트</th><th>프로토콜</th><th>용도</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>20022</td><td>TCP</td><td>SSH 원격 접속</td><td class="port-allow">ALLOW</td></tr>
+          <tr><td>15034</td><td>TCP</td><td>Agent 앱 API</td><td class="port-allow">ALLOW</td></tr>
+          <tr><td>22 (기본)</td><td>TCP</td><td>SSH 기본 포트 (변경 전)</td><td class="port-deny">DENY</td></tr>
+          <tr><td>그 외 모두</td><td>-</td><td>-</td><td class="port-deny">DENY</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 6. SSH -->
+  <section id="s6">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">SSH 보안 설정</span>
+    </div>
+    <div class="card">
+      <div class="ssh-compare">
+        <div class="ssh-box bad">
+          <div class="ssh-box-title">변경 전 (위험)</div>
+          <div class="ssh-item"><span class="key">Port</span><span class="val-bad">22</span></div>
+          <div class="ssh-item"><span class="key">PermitRootLogin</span><span class="val-bad">yes</span></div>
+        </div>
+        <div class="ssh-box good">
+          <div class="ssh-box-title">변경 후 (안전)</div>
+          <div class="ssh-item"><span class="key">Port</span><span class="val-good">20022</span></div>
+          <div class="ssh-item"><span class="key">PermitRootLogin</span><span class="val-good">no</span></div>
+        </div>
+      </div>
+      <div class="ssh-reason">
+        <strong style="color:var(--text)">왜 바꿔야 하는가?</strong><br>
+        포트 22는 전 세계 해킹 봇의 기본 공격 대상이다. 포트를 바꾸는 것만으로도 자동화 공격 시도를 대폭 줄일 수 있다.<br>
+        루트 계정은 시스템 전체 권한을 가지므로, 원격 로그인이 허용되면 침해 시 피해가 치명적이다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 방화벽 -->
+  <section id="s7">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">방화벽 (UFW / firewalld)</span>
+    </div>
+    <div class="card">
+      <div class="fw-layers">
+        <div class="fw-layer internet">
+          <span class="fw-icon">🌐</span>
+          <div class="fw-text">
+            <div class="main">인터넷 (외부 트래픽)</div>
+            <div class="sub">모든 포트로 접속 시도</div>
+          </div>
+        </div>
+        <div class="fw-arrow-down">↓</div>
+        <div class="fw-layer firewall">
+          <span class="fw-icon">🛡</span>
+          <div class="fw-text">
+            <div class="main">방화벽 (UFW / firewalld)</div>
+            <div class="sub">허용 목록과 비교 후 필터링</div>
+          </div>
+        </div>
+        <div class="fw-arrow-down">↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓</div>
+        <div style="display:flex; gap:16px; width:100%; max-width:600px;">
+          <div class="fw-layer allow" style="flex:1;">
+            <span class="fw-icon">✅</span>
+            <div class="fw-text">
+              <div class="main">허용</div>
+              <div class="sub">:20022 / :15034</div>
+            </div>
+            <span class="fw-status allow">ALLOW</span>
+          </div>
+          <div class="fw-layer deny" style="flex:1;">
+            <span class="fw-icon">🚫</span>
+            <div class="fw-text">
+              <div class="main">차단</div>
+              <div class="sub">그 외 모든 포트</div>
+            </div>
+            <span class="fw-status deny">DENY</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 환경변수 -->
+  <section id="s8">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <span class="section-title">환경 변수</span>
+    </div>
+    <div class="card">
+      <div class="env-flow">
+        <div>
+          <div style="font-size:0.7rem; color:var(--muted); font-family:var(--mono); margin-bottom:8px;">.bashrc 에 선언</div>
+          <div class="env-vars">
+            <span class="env-key">AGENT_HOME</span><span class="env-eq">=</span><span class="env-val">/home/agent-admin/agent-app</span><br>
+            <span class="env-key">AGENT_PORT</span><span class="env-eq">=</span><span class="env-val">15034</span><br>
+            <span class="env-key">AGENT_UPLOAD_DIR</span><span class="env-eq">=</span><span class="env-val">$AGENT_HOME/upload_files</span><br>
+            <span class="env-key">AGENT_KEY_PATH</span><span class="env-eq">=</span><span class="env-val">$AGENT_HOME/api_keys/t_secret.key</span><br>
+            <span class="env-key">AGENT_LOG_DIR</span><span class="env-eq">=</span><span class="env-val">/var/log/agent-app</span>
+          </div>
+        </div>
+        <div class="env-mid">→</div>
+        <div>
+          <div style="font-size:0.7rem; color:var(--muted); font-family:var(--mono); margin-bottom:8px;">스크립트에서 참조</div>
+          <div class="env-usage">
+            LOG=<span class="env-dollar">$AGENT_LOG_DIR</span>/monitor.log<br>
+            cd <span class="env-dollar">$AGENT_HOME</span><br>
+            echo <span class="env-dollar">$AGENT_PORT</span><br>
+            cat <span class="env-dollar">$AGENT_KEY_PATH</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px; font-size:0.78rem; color:var(--dim); line-height:1.7; padding:12px; border:1px solid var(--border); border-radius:6px; background:rgba(255,255,255,0.02);">
+        경로를 코드에 직접 쓰지 않고 환경 변수로 관리하면, 환경(개발/운영)이 바뀌어도 코드 수정 없이 동작한다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Bash 스크립트 -->
+  <section id="s9">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <span class="section-title">Bash 쉘 스크립트</span>
+    </div>
+    <div class="card">
+      <div class="bash-cards">
+        <div class="bash-card">
+          <div class="bash-card-title">프로세스 체크</div>
+          <div class="bash-code">
+            <span class="bc"># PID 가져오기</span><br>
+            <span class="bv">PID</span>=<span class="bf">$(pgrep</span> -f agent_app.py<span class="bf">)</span><br><br>
+            <span class="bk">if</span> [ -z <span class="bs">"$PID"</span> ]; <span class="bk">then</span><br>
+            &nbsp;&nbsp;echo <span class="bs">"[ERROR] 프로세스 없음"</span><br>
+            &nbsp;&nbsp;<span class="bk">exit</span> 1<br>
+            <span class="bk">fi</span>
+          </div>
+        </div>
+        <div class="bash-card">
+          <div class="bash-card-title">포트 체크</div>
+          <div class="bash-code">
+            <span class="bc"># 포트 LISTEN 확인</span><br>
+            <span class="bf">ss</span> -tulnp | <span class="bf">grep</span> <span class="bs">":15034"</span><br>
+            &nbsp;&nbsp;&gt; /dev/null 2&gt;&amp;1<br><br>
+            <span class="bk">if</span> [ $? -ne 0 ]; <span class="bk">then</span><br>
+            &nbsp;&nbsp;echo <span class="bs">"[ERROR] 포트 없음"</span><br>
+            &nbsp;&nbsp;<span class="bk">exit</span> 1<br>
+            <span class="bk">fi</span>
+          </div>
+        </div>
+        <div class="bash-card">
+          <div class="bash-card-title">리소스 수집</div>
+          <div class="bash-code">
+            <span class="bc"># CPU 사용률</span><br>
+            <span class="bv">CPU</span>=<span class="bf">$(top</span> -bn1 | <span class="bf">grep</span> <span class="bs">"Cpu"</span><br>
+            &nbsp;&nbsp;| <span class="bf">awk</span> <span class="bs">'{print $2}'</span><span class="bf">)</span><br><br>
+            <span class="bc"># 메모리 사용률</span><br>
+            <span class="bv">MEM</span>=<span class="bf">$(free</span> | <span class="bf">grep</span> Mem<br>
+            &nbsp;&nbsp;| <span class="bf">awk</span> <span class="bs">'{printf "%.1f", $3/$2*100}'</span><span class="bf">)</span><br><br>
+            <span class="bc"># 디스크 사용률</span><br>
+            <span class="bv">DISK</span>=<span class="bf">$(df</span> / | <span class="bf">tail</span> -1<br>
+            &nbsp;&nbsp;| <span class="bf">awk</span> <span class="bs">'{print $5}'</span> | <span class="bf">tr</span> -d <span class="bs">'%'</span><span class="bf">)</span>
+          </div>
+        </div>
+        <div class="bash-card">
+          <div class="bash-card-title">로그 기록</div>
+          <div class="bash-code">
+            <span class="bc"># 타임스탬프 생성</span><br>
+            <span class="bv">TS</span>=<span class="bf">$(date</span> <span class="bs">'+%Y-%m-%d %H:%M:%S'</span><span class="bf">)</span><br><br>
+            <span class="bc"># 로그 파일에 추가</span><br>
+            echo <span class="bs">"[$TS] PID:$PID</span><br>
+            &nbsp;&nbsp;<span class="bs">CPU:${CPU}%</span><br>
+            &nbsp;&nbsp;<span class="bs">MEM:${MEM}%</span><br>
+            &nbsp;&nbsp;<span class="bs">DISK_USED:${DISK}%"</span><br>
+            &nbsp;&nbsp;&gt;&gt; <span class="bv">$LOG_FILE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. cron -->
+  <section id="s10">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <span class="section-title">cron 자동화</span>
+    </div>
+    <div class="card">
+      <div class="cron-vis">
+        <div style="font-size:0.72rem; color:var(--muted); font-family:var(--mono); margin-bottom:12px;">crontab 표현식 해석</div>
+        <div class="cron-expr">
+          <div class="cron-part">
+            <div class="cron-val active">*</div>
+            <div class="cron-field">분<br>(0-59)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-val active">*</div>
+            <div class="cron-field">시<br>(0-23)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-val active">*</div>
+            <div class="cron-field">일<br>(1-31)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-val active">*</div>
+            <div class="cron-field">월<br>(1-12)</div>
+          </div>
+          <div class="cron-part">
+            <div class="cron-val active">*</div>
+            <div class="cron-field">요일<br>(0-6)</div>
+          </div>
+          <div class="cron-part" style="max-width:180px;">
+            <div class="cron-val cmd">$AGENT_HOME/bin/monitor.sh</div>
+            <div class="cron-field">실행 명령</div>
+          </div>
+        </div>
+        <div style="margin-top:6px; font-size:0.72rem; color:var(--accent); font-family:var(--mono);">
+          * * * * * → 매 1분마다 실행
+        </div>
+
+        <div style="margin-top:24px; font-size:0.72rem; color:var(--muted); font-family:var(--mono); margin-bottom:12px;">실행 타임라인</div>
+        <div class="cron-timeline">
+          <div class="cron-tick">
+            <div class="cron-dot"></div>
+            <div class="cron-time">13:58:01</div>
+            <div class="cron-log-line">로그 기록</div>
+          </div>
+          <div class="cron-line"></div>
+          <div class="cron-tick">
+            <div class="cron-dot"></div>
+            <div class="cron-time">13:59:01</div>
+            <div class="cron-log-line">로그 기록</div>
+          </div>
+          <div class="cron-line"></div>
+          <div class="cron-tick">
+            <div class="cron-dot"></div>
+            <div class="cron-time">14:00:01</div>
+            <div class="cron-log-line">로그 기록</div>
+          </div>
+          <div class="cron-line"></div>
+          <div class="cron-tick">
+            <div class="cron-dot" style="opacity:0.3;"></div>
+            <div class="cron-time" style="color:var(--border);">14:01:01</div>
+            <div class="cron-log-line" style="color:var(--border);">...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. 로그 관리 -->
+  <section id="s11">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <span class="section-title">로그 관리</span>
+    </div>
+    <div class="card">
+      <div style="font-size:0.72rem; color:var(--muted); font-family:var(--mono); margin-bottom:12px;">로그 포맷 구조</div>
+      <div class="log-format">
+        <div class="log-part ts">
+          <div class="log-token">[2026-02-25 14:00:01]</div>
+          <div class="log-desc">타임스탬프</div>
+        </div>
+        <div class="log-part pid">
+          <div class="log-token">PID:48291</div>
+          <div class="log-desc">프로세스 ID</div>
+        </div>
+        <div class="log-part cpu">
+          <div class="log-token">CPU:25.3%</div>
+          <div class="log-desc">CPU 사용률</div>
+        </div>
+        <div class="log-part mem">
+          <div class="log-token">MEM:9.8%</div>
+          <div class="log-desc">메모리 사용률</div>
+        </div>
+        <div class="log-part disk">
+          <div class="log-token">DISK_USED:23%</div>
+          <div class="log-desc">디스크 사용률</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.72rem; color:var(--muted); font-family:var(--mono); margin-bottom:8px;">누적 기록 예시</div>
+      <div class="log-sample">
+        <span class="ls-ts">[2026-02-25 13:58:01]</span> <span class="ls-pid">PID:48291</span> <span class="ls-cpu">CPU:10.2%</span> <span class="ls-mem">MEM:3.2%</span> <span class="ls-disk">DISK_USED:23%</span><br>
+        <span class="ls-ts">[2026-02-25 13:59:01]</span> <span class="ls-pid">PID:48291</span> <span class="ls-cpu">CPU:18.7%</span> <span class="ls-mem">MEM:5.0%</span> <span class="ls-disk">DISK_USED:23%</span><br>
+        <span class="ls-ts">[2026-02-25 14:00:01]</span> <span class="ls-pid">PID:48291</span> <span class="ls-cpu">CPU:25.3%</span> <span class="ls-mem">MEM:9.8%</span> <span class="ls-disk">DISK_USED:23%</span>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+          <div style="font-size:0.7rem; color:var(--accent4); font-family:var(--mono); margin-bottom:6px;">logrotate 정책</div>
+          <div style="font-size:0.75rem; color:var(--muted); line-height:1.7; font-family:var(--mono);">
+            최대 10MB / 10개 파일 유지<br>
+            초과 시 자동 압축(gzip)<br>
+            오래된 파일 자동 삭제
+          </div>
+        </div>
+        <div style="flex:1; min-width:200px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+          <div style="font-size:0.7rem; color:var(--accent5); font-family:var(--mono); margin-bottom:6px;">로그가 필요한 이유</div>
+          <div style="font-size:0.75rem; color:var(--muted); line-height:1.7;">
+            장애 발생 시 언제, 어떤 상태에서 문제가 생겼는지 추적. 로그 없이는 원인 분석 불가.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 전체 흐름 요약 -->
+  <section id="summary">
+    <div class="section-header">
+      <span class="section-num">--</span>
+      <span class="section-title">전체 개념 연결 흐름</span>
+    </div>
+    <div class="flow-wrap">
+      <div class="flow-title">계정/권한 → 스크립트 실행 → 모니터링 → 로그 저장 → 자동화</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-icon fi-1">👥</div>
+          <div class="flow-step-label">계정/그룹<br>분리</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-icon fi-2">🔒</div>
+          <div class="flow-step-label">파일 권한<br>+ ACL 적용</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-icon fi-3">📜</div>
+          <div class="flow-step-label">monitor.sh<br>실행 권한</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-icon fi-4">⏰</div>
+          <div class="flow-step-label">cron 매분<br>자동 실행</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-icon fi-5">📊</div>
+          <div class="flow-step-label">리소스<br>수집 & 기록</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-step">
+          <div class="flow-icon fi-6">🗂</div>
+          <div class="flow-step-label">logrotate<br>용량 관리</div>
+        </div>
+      </div>
+      <div style="margin-top:20px; text-align:center; font-size:0.72rem; color:var(--muted); font-family:var(--mono);">
+        SSH 보안 + 방화벽은 외부 접근 자체를 제어하는 별도 레이어
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>
