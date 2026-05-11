@@ -194,7 +194,7 @@ chmod 770 /var/log/agent-app
 ls -l /home/agent-admin/agent-app/
 ls -l /var/log/agent-app
 ```
-<img src="Screenshot/그룹 권한 확인.png" alt="그룹 권한 확인">
+<img src="Screenshot/그룹%20권한%20확인.png" alt="그룹 권한 확인">
 
 #### 권한 전체 확인표
 | 디렉토리 경로 | 소유 그룹 | 권한(Permission) | 현재 상태 |
@@ -212,3 +212,22 @@ echo 'export AGENT_UPLOAD_DIR=$AGENT_HOME/upload_files' >> /home/agent-admin/.ba
 echo 'export AGENT_KEY_PATH=$AGENT_HOME/api_keys/t_secret.key' >> /home/agent-admin/.bashrc
 echo 'export AGENT_LOG_DIR=/var/log/agent-app' >> /home/agent-admin/.bashrc
 ```
+
+```
+# 키 파일 생성
+echo 'agent_api_key_test' > /home/agent-admin/agent-app/api_keys/t_secret.key
+
+# 확인
+cat /home/agent-admin/agent-app/api_keys/t_secret.key
+```
+<img src="Screenshot/환경변수%20설정.png" alt="그룹 권한 확인">
+
+### 현재 진행 의미
+| 변수명 | 의미 | 비고 |
+| :--- | :--- | :--- |
+| **AGENT_HOME** | 앱 루트 경로 | 애플리케이션 최상위 디렉토리 |
+| **AGENT_PORT** | 앱이 사용할 포트 번호 | 서비스 리슨(Listen) 포트 |
+| **AGENT_UPLOAD_DIR** | 파일 업로드 저장 경로 | `upload_files` 디렉토리와 연결 |
+| **AGENT_KEY_PATH** | API 키 파일 경로 | `api_keys` 디렉토리 내 파일 경로 |
+| **AGENT_LOG_DIR** | 로그 저장 경로 | `/var/log/agent-app` 등 로그 위치 |
+
