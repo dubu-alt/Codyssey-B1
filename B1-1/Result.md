@@ -231,3 +231,172 @@ cat /home/agent-admin/agent-app/api_keys/t_secret.key
 | **AGENT_KEY_PATH** | API 키 파일 경로 | `api_keys` 디렉토리 내 파일 경로 |
 | **AGENT_LOG_DIR** | 로그 저장 경로 | `/var/log/agent-app` 등 로그 위치 |
 
+# 실행 권한 부여 시도
+```
+# 실행 권한 부여 시도
+chmod +x /home/agent-admin/agent-app/agent-app
+
+# 컨테이너에 파일 복사
+docker cp ~/Desktop/Codyssey-B1/B1-1/agent-app mission:/home/agent-admin/agent-app/agent-app
+
+# mission 컨테이너 재진입 
+docker exec -it mission /bin/bash
+```
+<img src="Screenshot/실행권한부여.png" alt="실행권한부여">
+
+---
+```
+# agent-admin으로 전환하고 앱 실행 과정
+su - agent-admin
+
+# 환경변수 로드 및 앱 실행 시도
+source ~/.bashrc
+$AGENT_HOME/agent-app
+```
+
+<img src="Screenshot/환경변수로드_실행.png" alt="환경변수로드_실행">
+
+## 환경변수 로드 및 앱 실행 실패 해결 과정
+1. 맥 아키텍처 확인
+```
+unname -m
+x86_64 출력됨
+```
+2. GLIBC 버전 확인
+```
+ldd --version
+
+ldd (Ubuntu GLIBC 2.35-0ubuntu3.13) 2.35
+Copyright (C) 2022 Free Software Foundation, Inc.
+--- 중략 ---
+```
+3. 우분투 버전 확인
+```
+cat /etc/os-release
+
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+-- 중략 --
+```
+**원인 생각:** 현재 우분투 버전 Ubuntu24.04| GLIBC 버전 2.35 22.04가 캐시되서 실행된것으로 판단\
+**해결 과정:** 22.04 이미지를 새로 받아서 재실행
+```
+# 기존에 있는 mission 이미지 삭제 후 우분투 버전 24.04버전 설치
+
+docker rm -f mission
+docker pull ubuntu:24.04
+docker run -it --name mission \
+  --privileged \
+  -p 20022:20022 \
+  -p 15034:15034 \
+  ubuntu:24.04 /bin/bash
+
+cat /etc/os-release       #버전 재확인
+```
+
+### 패키지 재설치
+```
+apt update && apt install -y \
+  openssh-server \
+  ufw \
+  python3 \
+  sudo \
+  vim \
+  net-tools \
+  iproute2 \
+  acl
+```
+그 이후 기존에 SSH설정, UFW설정, 계정/그룹생성, 디렉토리 및 권한설정\
+환경 변수 및 키 파일 다시 똑같이 다시함...
+
+
+# 오류 해결 이후 제공한 앱 실행 재시도
+```
+# 컨테이너 내부에 들어가서 실행
+docker exec -it mission /bin/bash
+
+# 실행 권한 부여 시도
+chmod +x /home/agent-admin/agent-app/agent-app
+
+# agent-admin으로 계정을 전환
+su - agent-admin
+
+# 환경 변수 로드
+source ~/.bashrc
+
+# 제공한 (agent-app) 앱 실행 
+$AGENT_HOME/agent-app
+
+```
+
+- 앱 부트 시퀀스 출력 결과물
+```
+>>> Starting Agent Boot Sequence...
+[1/5] Checking User Account               [OK]
+ ... Running as service user 'agent-admin' (uid=1001)
+[2/5] Verifying Environment Variables     [OK]
+ ... All required Envs correct
+[3/5] Checking Required Files             [OK]
+ ... Verified 'secret.key' with correct key string.
+[4/5] Checking Port Availability          [OK]
+ ... Port 15034 is available.
+[5/5] Verifying Log Permission            [OK]
+ ... Log directory is writable: /var/log/agent-app
+------------------------------------------------------------
+All Boot Checks Passed!
+Agent READY
+2026-05-12 11:49:54,267 [INFO] [SafetyGuard] Process priority lowered (nice=10).
+2026-05-12 11:49:54,267 [INFO] Agent listening at port 15034
+2026-05-12 11:49:54,267 [INFO] === Agent Started. Beginning resource cycle. ===
+2026-05-12 11:49:54,267 [INFO] --- Step Info: Mode=UP, CPU Lv=1, Mem=0MB ---
+-- 중략 --
+```
+<img src="Screenshot/앱실행.png" alt="앱실행">
+
+## 포트 15034 Listen 상태 확인
+agent-app이 켜진 상태로 mission 터미널로 들어가서 15034 포트 동작여부 확인
+```
+# 앱을 켜 둔 상태로 새 터미널을 열고 컨테이너에 진입
+docker exec -it mission /bin/bash
+
+# 포트 15034 확인
+ss -tulnp | grep 15034
+```
+<img src="Screenshot/Port15034_Listen.png" alt="Port15034_Listen">
+
+# 현재 과정 이해
+1. chmod +x /home/agent-admin/agent-app/agent-app
+
+- agent-app 파일에 실행 권한 부여
+- 리눅스에서 파일을 실행하려면 반드시 실행 권한(x)이 있어야 함
+- 없으면 Permission denied 오류 남
+
+2. su - agent-admin
+
+- root에서 agent-admin 계정으로 전환
+- 미션 요구사항이 "루트로 실행 금지"이기 때문에
+- Boot Sequence 1단계에서 agent-admin으로 실행 중인지 확인함
+
+3. source ~/.bashrc
+
+- 아까 설정한 환경 변수(AGENT_HOME, AGENT_PORT 등) 로드
+- 이걸 안 하면 앱이 환경 변수를 못 읽어서 Boot Sequence 2단계에서 실패함
+
+4. $AGENT_HOME/agent-app 실행
+
+- 앱이 시작되면서 Boot Sequence 5단계 검증 수행
+- 모두 통과하면 Agent READY 출력
+- 그 이후 앱이 CPU/메모리 워크로드 시뮬레이션을 돌림
+
+**워크로드 시뮬레이션 그게 뭐임?**\
+지금 제공된 agent-app은 실제 서비스처럼 CPU와 메모리를 사용하는 척하는 테스트용 앱임.
+- CPU 레벨을 1~10으로 올렸다 내렸다 하면서 부하를 발생시킴
+- monitor.sh 테스트를 위한 부하 발생기 역할
+- monitor.sh가 CPU와 메모리 사용률을 수집하고 경고를 띄우는 걸 테스트 함
+
+---
+
