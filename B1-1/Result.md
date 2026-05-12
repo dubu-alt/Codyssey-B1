@@ -401,3 +401,171 @@ ss -tulnp | grep 15034
 
 ---
 
+# monitor.sh 작성
+일단 스크립트를 저장할 디렉토리를 생성, 요구사항에서 경로가 $AGENT_HOME/bin/monitor.sh\
+-p 이건 상위 디렉토리가 없어도 한번에 생성 하는 거임
+
+미션 요구사항에서 소유자: agent-dev | 그룹: agent-core |  chown 소유자:그룹경로 형식\
+chmod 750 → rwxr-x--- | 소유자:읽고,쓰고,실행 모두 가능 | 그룹은 읽기와 실행만 가능 | others:접근 못함
+```
+mkdir -p /home/agent-admin/agent-app/bin                    # 스크립트 저장 디렉토리 생성
+chown agent-dev:agent-core /home/agent-admin/agent-app/bin  # 소유자 | 그룹 지정
+chmod 750 /home/agent-admin/agent-app/bin                   # 각 권한 부여
+```
+
+```
+# monitor.sh 스크립트 작성
+
+cat > /home/agent-admin/agent-app/bin/monitor.sh << 'EOF'
+#!/bin/bash
+
+LOG_FILE="/var/log/agent-app/monitor.log"
+MAX_LOG_SIZE=$((10 * 1024 * 1024))  # 10MB
+MAX_LOG_COUNT=10
+APP_NAME="agent-app"
+APP_PORT=15034
+
+echo "====== SYSTEM MONITOR RESULT ======"
+echo ""
+echo "[HEALTH CHECK]"
+
+# 프로세스 체크
+PID=$(pgrep -f "$APP_NAME")
+if [ -z "$PID" ]; then
+    echo "Checking process '$APP_NAME'... [FAIL]"
+    echo "[ERROR] Process not running. Exiting."
+    exit 1
+else
+    echo "Checking process '$APP_NAME'... [OK] (PID: $PID)"
+fi
+
+# 포트 체크
+PORT_CHECK=$(ss -tulnp | grep ":$APP_PORT ")
+if [ -z "$PORT_CHECK" ]; then
+    echo "Checking port $APP_PORT... [FAIL]"
+    echo "[ERROR] Port $APP_PORT not listening. Exiting."
+    exit 1
+else
+    echo "Checking port $APP_PORT... [OK]"
+fi
+
+echo ""
+echo "[FIREWALL CHECK]"
+
+# 방화벽 체크
+UFW_STATUS=$(ufw status | grep -i "Status: active")
+if [ -z "$UFW_STATUS" ]; then
+    echo "[WARNING] Firewall is not active."
+else
+    echo "Firewall status... [OK]"
+fi
+
+echo ""
+echo "[RESOURCE MONITORING]"
+
+# CPU 사용률
+CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)
+if [ -z "$CPU" ]; then
+    CPU=$(top -bn1 | grep "%Cpu" | awk '{print $2}')
+fi
+
+# 메모리 사용률
+MEM=$(free | grep Mem | awk '{printf "%.1f", $3/$2 * 100}')
+
+# 디스크 사용률
+DISK=$(df / | tail -1 | awk '{print $5}' | cut -d'%' -f1)
+
+echo "CPU Usage  : ${CPU}%"
+echo "MEM Usage  : ${MEM}%"
+echo "DISK Used  : ${DISK}%"
+
+echo ""
+
+# 임계값 경고
+CPU_INT=$(echo "$CPU" | cut -d'.' -f1)
+MEM_INT=$(echo "$MEM" | cut -d'.' -f1)
+
+if [ "$CPU_INT" -gt 20 ]; then
+    echo "[WARNING] CPU threshold exceeded (${CPU}% > 20%)"
+fi
+if [ "$MEM_INT" -gt 10 ]; then
+    echo "[WARNING] MEM threshold exceeded (${MEM}% > 10%)"
+fi
+if [ "$DISK" -gt 80 ]; then
+    echo "[WARNING] DISK threshold exceeded (${DISK}% > 80%)"
+fi
+
+# 로그 기록
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+echo "[$TIMESTAMP] PID:$PID CPU:${CPU}% MEM:${MEM}% DISK_USED:${DISK}%" >> "$LOG_FILE"
+
+echo "[INFO] Log appended: $LOG_FILE"
+echo ""
+echo "======================================"
+
+# 로그 파일 용량 관리
+if [ -f "$LOG_FILE" ]; then
+    LOG_SIZE=$(stat -c%s "$LOG_FILE")
+    if [ "$LOG_SIZE" -gt "$MAX_LOG_SIZE" ]; then
+        for i in $(seq $((MAX_LOG_COUNT-1)) -1 1); do
+            if [ -f "${LOG_FILE}.$i" ]; then
+                mv "${LOG_FILE}.$i" "${LOG_FILE}.$((i+1))"
+            fi
+        done
+        mv "$LOG_FILE" "${LOG_FILE}.1"
+        touch "$LOG_FILE"
+        chown agent-dev:agent-core "$LOG_FILE"
+        chmod 660 "$LOG_FILE"
+    fi
+fi
+EOF
+```
+
+## 권한설정 및 결과 확인
+```
+# monitor.sh 파일의 소유자를 agent-dev, 그룹을 agent-core로 변경
+# 미션 요구사항: 소유자=agent-dev, 그룹=agent-core
+
+chown agent-dev:agent-core /home/agent-admin/agent-app/bin/monitor.sh
+chmod 750 /home/agent-admin/agent-app/bin/monitor.sh
+
+# -rwxr-x--- 형태로 나오면 정상
+ls -l /home/agent-admin/agent-app/bin/monitor.sh
+```
+<img src="Screenshot/Monitor_Script_Auth.png" alt="모니터 스크립트 권한">
+
+## monitor.sh 실행 테스트
+agent-admin으로 전환 후 monitor.sh 실행
+
+```
+su - agent-admin                            # agent-admin으로 전환
+source ~/.bashrc                            # 환경 변수 로드
+$AGENT_HOME/agent-app                       # 앱 실행
+/home/agent-admin/agent-app/bin/monitor.sh  # monitor.sh 실행
+```
+<img src="Screenshot/Monitor_Script_Result.png" alt="모니터 스크립트 결과">
+
+# 자동 실행 설정 (cron 관련)
+```
+docker exec -it mission /bin/bash   # mission 터미널로 진입
+apt install -y cron                 # cron 패키지 설치
+
+service cron start                  # cron 서비스 시작
+su - agent-admin                    # agent-admin 계정으로 전환
+crontab -e                          # 특정 계정의 예약 작업 목록
+
+# 매분 자동으로 monitor.sh 실행
+# * * * * * = 분 시 일 월 요일 (모두 *이면 매분 실행)
+* * * * * /home/agent-admin/agent-app/bin/monitor.sh
+
+```
+<img src="Screenshot/Cron_Job_Register.png" alt="매분 자동 실행 ">
+
+
+| 위치 | 의미 | 범위 (값) | 설정값 (*) 의 의미 |
+| :---: | :--- | :--- | :--- |
+| **첫 번째** | 분 | 0 - 59 | 매분 마다 실행 |
+| **두 번째** | 시 | 0 - 23 | 매시 마다 실행 |
+| **세 번째** | 일 | 1 - 31 | 매일 마다 실행 |
+| **네 번째** | 월 | 1 - 12 | 매월 마다 실행 |
+| **다섯 번째** | 요일 | 0 - 7 | 매요일 마다 실행 (0, 7: 일요일) |
