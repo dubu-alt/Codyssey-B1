@@ -3,7 +3,7 @@
 ---
 
 ## 목차
-
+0. 개념 노트
 1. 파일 시스템과 디렉토리 구조
 2. 사용자와 그룹 관리
 3. 파일 권한과 ACL
@@ -17,6 +17,19 @@
 11. 로그 관리
 
 ---
+### 개념 노트
+<table class="center">
+  <tr>
+    <td><img src="Screenshot/ssh-and-linux-filesystem.png" width="100%" alt="SSH 개념 및 리눅스 파일 시스템 구조"></td>
+    <td><img src="Screenshot/linux-user-group-acl.png" width="100%" alt="UFW 및 권한"></td>
+    <td><img src="Screenshot/shell-scripting-and-pid-note.png" width="100%" alt="환경변수 및 쉘 스크립트"></td>
+  </tr>
+  <tr align="center">
+    <td><b>필기 노트 01 (SSH 개념 / 리눅스 파일 시스템 구조)</b></td>
+    <td><b>필기 노트 02 (UFW / 권한)</b></td>
+    <td><b>필기 노트 03 (환경변수 / 검증 로직)</b></td>
+  </tr>
+</table>
 
 ## 1. 파일 시스템과 디렉토리 구조
 
