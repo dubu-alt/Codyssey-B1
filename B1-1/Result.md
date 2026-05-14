@@ -771,7 +771,6 @@ cat /var/log/agent-app/monitor.log
 [2026-05-12 14:28:01] PID:4951 CPU:0.0% MEM:3.8% DISK_USED:1%
 ```
 
-<img src="Screenshot/Cron_Service_Status.png" alt="cron 로그 누적 확인">
 
 ```
 1분 간격으로 로그가 자동 누적되는 것을 확인하여 cron 자동 실행이 정상 동작함을 검증 완료
