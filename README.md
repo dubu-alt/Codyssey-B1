@@ -10,8 +10,12 @@
 전체적인 디렉토리 구조:
 
 B1-1  (시스템 관제 자동화 스크립트 개발)
-├── README.md           # 스크립트 관련 명세서
-├── B1-1 Concept.md     # 리눅스 개념 문서 정리
+├── Screenshot          # 이미지 관련 파일
+├── README.md           # 미션 관련 전체 문서
+├── B1-1_Concept.md     # 리눅스 개념 문서 정리
+├── Result.md           # 미션 수행 문서
+├── agent-app           # 앱 실행을 위한 바이너리 파일
+├── linux-concepts.html # 리눅스 개념 html 파일
 ├── .git/ (Git 저장소)  # git init을 통한 숨김 파일 
 └── .gitignore          # 무시 가능한 Git 파일
 
