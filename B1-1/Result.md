@@ -422,6 +422,56 @@ ls -l /var/log/agent-app
 | `api_keys` | **agent-core** | `770` (drwxrwx---) | 정상 |
 | `/var/log/agent-app` | **agent-core** | `770` (drwxrwx---) | 정상 |
 
+### 최소 권한 원칙 (Principle of Least Privilege)
+
+핵심 개념: **각 사용자는 자신의 업무에 필요한 최소한의 권한만 가져야 한다.**
+
+---
+
+### 각 계정의 역할과 필요한 권한
+
+| 계정 | 역할 | api_keys 필요? | 로그 필요? |
+|------|------|---------------|-----------|
+| agent-admin | 운영/관리, cron 실행 | 필요 | 필요 |
+| agent-dev | 개발, 스크립트 작성 | 필요 | 필요 |
+| agent-test | QA/테스트 | 불필요 | 불필요 |
+
+agent-test는 테스트만 하면 되므로 API 키나 운영 로그에 접근할 이유가 없음.
+
+---
+
+### 왜 제한해야 하는가?
+
+**api_keys 유출 시**
+- 외부 서비스 인증 정보가 탈취됨
+- 공격자가 해당 키로 외부 API를 무단 사용 가능
+
+**로그 유출 시**
+- 시스템 내부 정보(PID, 리소스 사용량, 실행 패턴)가 노출됨
+- 공격자가 취약한 시간대나 패턴을 파악하는 데 활용 가능
+
+---
+
+### 실제 적용 방식
+
+```bash
+# api_keys: agent-core만 접근 가능
+chown agent-admin:agent-core /home/agent-admin/agent-app/api_keys
+chmod 770 /home/agent-admin/agent-app/api_keys
+
+# /var/log/agent-app: agent-core만 접근 가능
+chown agent-admin:agent-core /var/log/agent-app
+chmod 770 /var/log/agent-app
+```
+
+`agent-core` 그룹에는 admin과 dev만 포함되어 있어서 test는 자동으로 접근 차단됨.
+
+---
+
+### 한 줄 요약
+
+> agent-test는 테스트 업무만 수행하면 되므로 API 키와 운영 로그에 접근할 필요가 없고, 불필요한 접근 권한을 주는 것 자체가 보안 위협이 됨.
+
 ---
 
 ## 앱 실행 환경 구성하기
