@@ -2,6 +2,22 @@
 - [⬅️ 이전 화면(README)으로 돌아가기](./README.md)
 
 ---
+
+## README 요구사항 기반 최종 점검표
+
+| README 필수 증거 항목 | Result.md 반영 위치 | 수행/검증 결과 |
+| :--- | :--- | :--- |
+| SSH 포트 변경 | `sshd_config`에서 `Port 20022`, `PermitRootLogin no` 설정 및 `ss -tulnp` 확인 | 20022 리슨 및 root 원격 로그인 차단 확인 |
+| 방화벽 설정 | UFW 활성화, 기본 inbound deny, 20022/tcp 및 15034/tcp 허용 | 필요한 포트만 허용되도록 구성 |
+| 계정/그룹 생성 | `agent-admin`, `agent-dev`, `agent-test`, `agent-common`, `agent-core` 생성 후 `id` 확인 | 역할 기반 그룹 배정 확인 |
+| 디렉토리/권한/ACL | `$AGENT_HOME/upload_files`, `$AGENT_HOME/api_keys`, `/var/log/agent-app` 생성 후 `ls -l`, `getfacl` 확인 | 그룹별 R/W 접근 정책 확인 |
+| 앱 Boot Sequence | 일반 계정 `agent-admin`으로 실행 | 5단계 `[OK]` 및 `Agent READY` 확인 |
+| 포트 Listen | `ss -tulnp \| grep 15034` 확인 | `0.0.0.0:15034` LISTEN 확인 |
+| monitor.sh | Bash 스크립트로 프로세스/포트/방화벽/자원/경고/로그 기록 구현 | 실행 결과와 로그 누적 확인 |
+| cron 자동 실행 | `agent-admin` crontab에 매분 실행 등록 | 1분 간격 로그 증가 확인 |
+
+---
+
 # 리눅스 파일 시스템 구조
 ```
 / (루트 디렉토리: 최상위 기준점)
@@ -111,10 +127,12 @@ PermitRootLogin no
 service ssh start      # SSH 서버 시작
 ss -tulnp | grep sshd  # 포트가 잘 열렸는지 설정 확인
 
-ufw allow 20022/tcp    # ufw 방화벽 20022 포트 허용
-ufw allow 15034/tcp    # ufw 방화벽 15034 포트 허용
-ufw --force enable     # ufw 적용
-ufw status             # ufw 상태 확인
+ufw default deny incoming   # 인바운드 기본 차단
+ufw default allow outgoing  # 아웃바운드 기본 허용
+ufw allow 20022/tcp         # ufw 방화벽 20022 포트 허용
+ufw allow 15034/tcp         # ufw 방화벽 15034 포트 허용
+ufw --force enable          # ufw 적용
+ufw status verbose          # ufw 상태 확인
 ```
 
 ![포트 변경 실패 사진](<Screenshot/포트 변경 실패.png>)
@@ -193,15 +211,20 @@ ss -tulnp | grep sshd       # 포트 리슨 다시 확인
 ### UFW 방화벽 설정 및 확인
 
 ```bash
-ufw allow 20022/tcp    # SSH 포트 허용
-ufw allow 15034/tcp    # 앱 포트 허용
-ufw --force enable     # 방화벽 활성화
-ufw status             # 상태 확인
+ufw default deny incoming   # 인바운드 기본 차단
+ufw default allow outgoing  # 아웃바운드 기본 허용
+ufw allow 20022/tcp         # SSH 포트 허용
+ufw allow 15034/tcp         # 앱 포트 허용
+ufw --force enable          # 방화벽 활성화
+ufw status verbose          # 상태 및 기본 정책 확인
 ```
 
 확인 결과
 ```
 Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+
 To                         Action      From
 --                         ------      ----
 20022/tcp                  ALLOW       Anywhere
@@ -302,11 +325,47 @@ chown -R agent-admin:agent-core /var/log/agent-app
 chmod 770 /var/log/agent-app
 ```
 
+### ACL 기본 권한 설정
+
+README의 확인 항목에 `getfacl`이 포함되어 있으므로, 기존 `chmod`/`chown` 권한에 더해 새로 생성되는 파일도 같은 그룹 정책을 상속하도록 기본 ACL을 설정함
+
+```bash
+# upload_files: agent-common 구성원에게 rwx, 새 파일/디렉토리도 agent-common 권한 상속
+setfacl -m g:agent-common:rwx /home/agent-admin/agent-app/upload_files
+setfacl -d -m g:agent-common:rwx /home/agent-admin/agent-app/upload_files
+
+# api_keys: agent-core 구성원에게 rwx, 새 파일/디렉토리도 agent-core 권한 상속
+setfacl -m g:agent-core:rwx /home/agent-admin/agent-app/api_keys
+setfacl -d -m g:agent-core:rwx /home/agent-admin/agent-app/api_keys
+
+# 로그 디렉토리: agent-core 구성원에게 rwx, 새 로그 파일도 agent-core 권한 상속
+setfacl -m g:agent-core:rwx /var/log/agent-app
+setfacl -d -m g:agent-core:rwx /var/log/agent-app
+```
+
 ### 권한 확인
 
 ```bash
 ls -l /home/agent-admin/agent-app/
-ls -l /var/log/agent-app
+ls -ld /var/log/agent-app
+getfacl /home/agent-admin/agent-app/upload_files
+getfacl /home/agent-admin/agent-app/api_keys
+getfacl /var/log/agent-app
+```
+
+ACL 확인 결과 요약
+```
+# /home/agent-admin/agent-app/upload_files
+group:agent-common:rwx
+default:group:agent-common:rwx
+
+# /home/agent-admin/agent-app/api_keys
+group:agent-core:rwx
+default:group:agent-core:rwx
+
+# /var/log/agent-app
+group:agent-core:rwx
+default:group:agent-core:rwx
 ```
 
 <img src="Screenshot/Check_Group_Permissions.png" alt="그룹 권한 확인">
@@ -330,6 +389,13 @@ echo 'export AGENT_PORT=15034' >> /home/agent-admin/.bashrc
 echo 'export AGENT_UPLOAD_DIR=$AGENT_HOME/upload_files' >> /home/agent-admin/.bashrc
 echo 'export AGENT_KEY_PATH=$AGENT_HOME/api_keys/t_secret.key' >> /home/agent-admin/.bashrc
 echo 'export AGENT_LOG_DIR=/var/log/agent-app' >> /home/agent-admin/.bashrc
+```
+
+환경 변수 검증
+```bash
+su - agent-admin
+source ~/.bashrc
+printf "%s\n" "$AGENT_HOME" "$AGENT_PORT" "$AGENT_UPLOAD_DIR" "$AGENT_KEY_PATH" "$AGENT_LOG_DIR"
 ```
 
 ```bash
@@ -415,6 +481,8 @@ sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_
 service ssh start
 
 # UFW 설정
+ufw default deny incoming
+ufw default allow outgoing
 ufw allow 20022/tcp
 ufw allow 15034/tcp
 ufw --force enable
@@ -544,21 +612,31 @@ cat > /home/agent-admin/agent-app/bin/monitor.sh << 'EOF'
 LOG_FILE="/var/log/agent-app/monitor.log"
 MAX_LOG_SIZE=$((10 * 1024 * 1024))  # 10MB
 MAX_LOG_COUNT=10
-APP_NAME="agent-app"
+APP_NAMES=("agent_app.py" "agent-app")
 APP_PORT=15034
 
 echo "====== SYSTEM MONITOR RESULT ======"
 echo ""
 echo "[HEALTH CHECK]"
 
-# 프로세스 체크: agent-app 프로세스 확인, 없으면 exit 1
-PID=$(pgrep -f "$APP_NAME")
+# 프로세스 체크: README 기준 agent_app.py를 우선 확인하고,
+# 실습에서 제공된 실행 파일명이 agent-app인 경우도 함께 확인함
+PID=""
+RUNNING_APP=""
+for APP_NAME in "${APP_NAMES[@]}"; do
+    PID=$(pgrep -f "$APP_NAME")
+    if [ -n "$PID" ]; then
+        RUNNING_APP="$APP_NAME"
+        break
+    fi
+done
+
 if [ -z "$PID" ]; then
-    echo "Checking process '$APP_NAME'... [FAIL]"
+    echo "Checking process 'agent_app.py/agent-app'... [FAIL]"
     echo "[ERROR] Process not running. Exiting."
     exit 1
 else
-    echo "Checking process '$APP_NAME'... [OK] (PID: $PID)"
+    echo "Checking process '$RUNNING_APP'... [OK] (PID: $PID)"
 fi
 
 # 포트 체크: TCP 15034 LISTEN 확인, 없으면 exit 1
@@ -775,6 +853,16 @@ crontab에 아래 내용 추가
 * * * * * /home/agent-admin/agent-app/bin/monitor.sh
 ```
 
+등록 확인
+```bash
+crontab -l
+```
+
+확인 결과
+```
+* * * * * /home/agent-admin/agent-app/bin/monitor.sh
+```
+
 <img src="Screenshot/Cron_Job_Register.png" alt="매분 자동 실행">
 
 ### cron 주기 설명
@@ -821,3 +909,24 @@ cat /var/log/agent-app/monitor.log
 [2026-05-12 15:28:01] PID:4951 4952 8023 8024 CPU:0.0% MEM:4.1% DISK_USED:1%
 ```
 <img src="Screenshot/Log_Content_Verify.png" alt="cron 누적 확인">
+
+---
+
+## 최종 제출 산출물 정리
+
+### 1. 요구사항 수행 내역서
+
+이 `Result.md`에는 README에서 요구한 SSH 포트/Root 로그인 차단, UFW 방화벽, 계정/그룹/ACL, 디렉토리 권한, 환경 변수, 앱 실행, `monitor.sh`, cron 등록과 검증 결과를 모두 순서대로 기록함
+
+### 2. 자동화 스크립트 소스코드
+
+`monitor.sh`는 `$AGENT_HOME/bin/monitor.sh`에 Bash로 작성했으며 다음 요구사항을 포함함
+
+- Health Check 실패 시 `exit 1`
+  - 앱 프로세스 확인: README 기준 `agent_app.py`, 실습 실행 파일 기준 `agent-app` 모두 대응
+  - `TCP 15034` LISTEN 확인
+- 방화벽 비활성 시 `[WARNING]`만 출력하고 계속 실행
+- CPU/MEM/DISK 사용률 수집 및 임계값 초과 시 `[WARNING]` 출력
+- `/var/log/agent-app/monitor.log`에 지정 포맷으로 로그 누적
+- 10MB 초과 시 최대 10개 파일로 순환 보관
+- `agent-admin` 계정 crontab에서 매분 자동 실행
