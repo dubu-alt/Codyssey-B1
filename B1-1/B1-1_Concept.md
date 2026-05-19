@@ -90,6 +90,7 @@
     └── log              # 시스템 로그 파일 저장 (auth.log, syslog 등)
 ```
 <img src="Screenshot/Linux_File_system.png" alt="리눅스 파일 시스템 구조">
+
 ## 1. 파일 시스템과 디렉토리 구조
 
 리눅스는 모든 것을 파일로 다룬다. 최상위 디렉토리는 `/` (루트)이며 아래로 뻗어 나간다.
