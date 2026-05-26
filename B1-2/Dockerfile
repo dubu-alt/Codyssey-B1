@@ -1,4 +1,4 @@
-# GLIBC 2.39가 포함된 Ubuntu 24.04를 기본 이미지로 사용하여 버전을 충족시킵니다.
+# GLIBC 2.39가 포함된 Ubuntu 24.04
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -19,34 +19,42 @@ RUN apt-get update \
        vim \
     && rm -rf /var/lib/apt/lists/*
 
-# [조건] 실행 계정: root가 아닌 일반 사용자(agentuser) 생성
+# 일반 사용자 생성
 RUN useradd -m -s /bin/bash agentuser
 
 WORKDIR /opt/b1-2
+
+# 바이너리 복사 및 권한 설정
 COPY agent-app-leak /opt/b1-2/agent-app-leak
+RUN chmod +x /opt/b1-2/agent-app-leak
 
-# [조건] 필수 디렉터리 생성, secret.key 파일 생성, 소유권 이전
-RUN chmod +x /opt/b1-2/agent-app-leak \
-    && mkdir -p /home/agentuser/agent-home/upload_files \
-               /home/agentuser/agent-home/api_keys \
-               /home/agentuser/agent-home/logs \
-    && echo 'agent_api_key_test' > /home/agentuser/agent-home/api_keys/secret.key \
-    && chown -R agentuser:agentuser /home/agentuser /opt/b1-2
+# 필수 디렉터리 생성
+RUN mkdir -p /home/agentuser/agent-home/upload_files \
+             /home/agentuser/agent-home/api_keys \
+             /home/agentuser/agent-home/logs
 
-# 일반 환경변수 고정 (SecretsUsedInArgOrEnv 경고 우회를 위해 AGENT_KEY_PATH는 제외)
+# secret.key 생성
+RUN echo 'agent_api_key_test' > /home/agentuser/agent-home/api_keys/secret.key
+
+# monitor.sh 복사 (host에서 준비 필수)
+COPY monitor.sh /opt/b1-2/monitor.sh
+RUN chmod +x /opt/b1-2/monitor.sh
+
+# 소유권 이전
+RUN chown -R agentuser:agentuser /home/agentuser /opt/b1-2
+
+# 환경변수 설정 (기본값 = 안정적 상태)
 ENV AGENT_HOME=/home/agentuser/agent-home \
     AGENT_PORT=15034 \
     AGENT_UPLOAD_DIR=/home/agentuser/agent-home/upload_files \
     AGENT_LOG_DIR=/home/agentuser/agent-home/logs \
-    MEMORY_LIMIT=100 \
-    CPU_MAX_OCCUPY=70 \
+    MEMORY_LIMIT=256 \
+    CPU_MAX_OCCUPY=80 \
     MULTI_THREAD_ENABLE=true
 
-# [조건] 네트워크 포트 개방
 EXPOSE 15034
 
-# [조건] 실행 계정 전환
 USER agentuser
 
-# [보안 해결] 실행 시점에 변수를 주입하여 린터 경고를 우회하고 바이너리 실행 조건을 만족시킴
+# 런타임에 AGENT_KEY_PATH 주입
 CMD ["/bin/bash", "-c", "AGENT_KEY_PATH=/home/agentuser/agent-home/api_keys exec /opt/b1-2/agent-app-leak"]
