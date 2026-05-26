@@ -27,6 +27,7 @@ agent-leak-app을 MEMORY_LIMIT=100MB로 실행하면, 약 10초 만에 메모리
 ---
 
 ## 2. Evidence & Logs (증거 자료)
+<img src="Screenshot/OOM_100MB_Before.png" alt="OOM_100MB제한">
 
 ### A. Boot Sequence & 초기 설정 로그
 
