@@ -10,9 +10,6 @@ B1-2/
 ├── logs_oom/               (OOM 로그 저장용)
 ├── logs_cpu/               (CPU 로그 저장용)
 └── logs_deadlock/          (Deadlock 로그 저장용)
-
-
-
 ```
 
 ## 0. 수행 목적
@@ -100,7 +97,9 @@ CMD ["/bin/bash", "-c", "AGENT_KEY_PATH=/home/agentuser/agent-home/api_keys exec
 ```
 
 ## 실행 명령어 (docker run 시 -e로 오버라이드)
- 
+
+[OOM (Out Of Memory) 재현 수행 파일 가기](./oom_test/01_OOM_Analysis.md)
+
 ### OOM 재현
 ```bash
 docker run -e MEMORY_LIMIT=100 \
