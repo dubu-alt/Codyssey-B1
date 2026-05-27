@@ -2,8 +2,8 @@
 
 - [B1-2 미션 소개 파일 가기](../README.md)
 - [B1-2 미션 수행 파일 가기](../Result1-2.md)
-- [CPU 분석 파일 가기](./oom_test/02_CPU_Analysis.md)
-- [데드락 분석 파일 가기](./oom_test/03_Deadlock_Analysis.md)
+- [CPU 분석 파일 가기](./02_CPU_Analysis.md)
+- [데드락 분석 파일 가기](./03_Deadlock_Analysis.md)
 
 ## 1. Description (현상 설명)
 
