@@ -28,10 +28,10 @@ docker logs -f agent-cpu
 
 ### 타임라인
 
-| 메모리 제한 512MB 및 CPU 할당 변경 | 메모리 256MB 제한 (변경 후) |
+| 메모리 제한 512MB 및 CPU 할당 변경 | 로그확인 |
 | :---: | :---: |
 | ![데드락1번 사진](screenshot/DeadLock1.png) | ![데드락 2번 사진](screenshot/DeadLock2.png) |
-| 데드락 발생 화면 1번 | 메모리 증설 후 정상 작동 화면 |
+| 조건 변경 | 데드락 발생 화면 |
 
 ```
 05:50:01 - Agent Boot Sequence 완료
