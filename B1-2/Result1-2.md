@@ -98,8 +98,9 @@ CMD ["/bin/bash", "-c", "AGENT_KEY_PATH=/home/agentuser/agent-home/api_keys exec
 
 ## 실행 명령어 (docker run 시 -e로 오버라이드)
 
-[OOM (Out Of Memory) 재현 수행 파일 가기](./oom_test/01_OOM_Analysis.md)
-
+- [OOM (Out Of Memory) 재현 수행 파일 가기](./oom_test/01_OOM_Analysis.md)
+- [CPU 분석 파일 가기](./oom_test/02_CPU_Analysis.md)
+- [데드락 분석 파일 가기](./oom_test/03_Deadlock_Analysis.md)
 ### OOM 재현
 ```bash
 docker run -e MEMORY_LIMIT=100 \

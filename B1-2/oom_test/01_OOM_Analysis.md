@@ -1,4 +1,9 @@
-[Bug] 메모리 누수에 의한 MemoryGuard 강제 종료 - MEMORY_LIMIT=100MB
+## [Bug] 메모리 누수에 의한 MemoryGuard 강제 종료 - MEMORY_LIMIT=100MB
+
+- [B1-2 미션 소개 파일 가기](../README.md)
+- [B1-2 미션 수행 파일 가기](../Result1-2.md)
+- [CPU 분석 파일 가기](./oom_test/02_CPU_Analysis.md)
+- [데드락 분석 파일 가기](./oom_test/03_Deadlock_Analysis.md)
 
 ## 1. Description (현상 설명)
 
