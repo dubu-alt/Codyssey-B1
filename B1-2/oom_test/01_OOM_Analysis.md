@@ -27,7 +27,6 @@ agent-leak-app을 MEMORY_LIMIT=100MB로 실행하면, 약 10초 만에 메모리
 ---
 
 ## 2. Evidence & Logs (증거 자료)
-<img src="Screenshot/OOM_100MB_Before.png" alt="OOM_100MB제한">
 
 ### A. Boot Sequence & 초기 설정 로그
 
@@ -49,6 +48,10 @@ agent-leak-app을 MEMORY_LIMIT=100MB로 실행하면, 약 10초 만에 메모리
 All Boot Checks Passed!
 Agent READY
 ```
+
+| 메모리 100MB 제한 (변경 전) | 메모리 256MB 제한 (변경 후) |
+| :---: | :---: |
+| ![메모리 100MB로 제한](screenshot/OOM_100MB_Before.png) | ![메모리 256MB로 제한](screenshot/OOM_256MB_After_.png) |
 
 **분석**: 모든 사전 조건이 정상적으로 확인됨. MEMORY_LIMIT=100MB로 설정 완료.
 
