@@ -37,6 +37,8 @@ agent-leak-app을 CPU_MAX_OCCUPY=30%로 실행하면, CPU 사용률이 점진적
 06:01:04 onwards - 메모리 cleanup 후 동일한 CPU 상승/하강 반복
 ```
 
+https://github.com/user-attachments/assets/7296cfd0-d300-4833-a6e7-cfb6158ea66d
+
 ---
 
 ## 2. Evidence & Logs (증거 자료)
