@@ -19,11 +19,31 @@ B1-1  (시스템 관제 자동화 스크립트 개발)
 ├── .git/ (Git 저장소)  # git init을 통한 숨김 파일 
 └── .gitignore          # 무시 가능한 Git 파일
 
-B1-2 (리눅스 프로세스 및 시스템 리소스 트러블 슈팅)
-├── README.md             # 시스템 장애 분석 및 이슈 리포트 설명서
-├── B1-2 Concept.md       # 개념 문서 정리
-├── .gitignore            # Git 무시 파일 목록
-└── .git/                 # Git 저장소 정보
+B1-2   (리눅스 프로세스 및 시스템 리소스 트러블 슈팅)
+├── B1-2 Concept.md           # (개념 설명 문서)
+├── README.md                 # (프로젝트 설명)
+├── Result1-2.md              # (결과 분석)
+├── Dockerfile                # (Docker 설정)
+├── monitor.sh                # (모니터링 셸 스크립트)
+├── agent-app-leak/           # (애플리케이션 소스 코드)
+└── test/                     # (테스트 및 분석)
+    ├── 01_OOM_Analysis.md          # (OOM 분석)
+    ├── 02_CPU_Analysis.md          # (CPU 분석)
+    ├── 03_Deadlock_Analysis.md     # (데드락 분석)
+    ├── CPU_Stress_test.mov         # (CPU 스트레스 테스트 영상)
+    ├── screenshot/                 # (스크린샷)
+    │   ├── DeadLock1.png
+    │   ├── DeadLock2.png
+    │   ├── OOM_100MB_Before.png
+    │   └── OOM_256MB_After_.png
+    ├── logs/                        # (각종 테스트 로그)
+    │   ├── oom_test_100mb.log
+    │   ├── oom_test_256mb.log
+    │   └── deadlock_test.log
+    ├── logs_oom/
+    │   └── agent_app.log
+    └── logs_oom_256/
+        └── agent_app.log
 
 B2-1 (파일 기반 가계부 콘솔 프로그램 생성)
 ├── README.md              # 기술 명세서
