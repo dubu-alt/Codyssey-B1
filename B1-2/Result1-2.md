@@ -182,18 +182,26 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] Monitoring stopped." >> "$MONITOR_LOG"
 ---
 
 
-## 빌드 및 테스트 명령어
+## 빌드 및 OOM 테스트
  
 ```bash
 # 1. 이미지 빌드
 docker build -t b1-2-agent:latest .
+docker build -t agent-leak:latest .
  
 # 2. OOM 테스트 (백그라운드 실행)
-docker run -d \
-  -e MEMORY_LIMIT=100 \
-  --name agent-oom \
-  -v $(pwd)/logs_oom:/home/agentuser/agent-home/logs \
-  b1-2-agent
+
+# OOM 100MB
+docker run -d -e MEMORY_LIMIT=100 --name agent-oom-100 agent-leak:latest
+sleep 15
+docker logs agent-oom-100
+docker rm -f agent-oom-100
+
+# OOM 256MB
+docker run -d -e MEMORY_LIMIT=256 --name agent-oom-256 agent-leak:latest
+sleep 40
+docker logs agent-oom-256
+docker rm -f agent-oom-256
  
 # 3. 로그 모니터링 (별도 터미널)
 watch -n 1 'tail -20 logs_oom/monitor.log'
@@ -206,7 +214,64 @@ docker cp agent-oom:/home/agentuser/agent-home/logs/monitor.log oom_monitor.log
 docker stop agent-oom
 docker rm agent-oom
 ```
+
+## CPU 테스트
  
+```bash
+docker run -d \
+  -e CPU_MAX_OCCUPY=30 \
+  -e MEMORY_LIMIT=512 \
+  -e MULTI_THREAD_ENABLE=false \
+  --name agent-cpu \
+  agent-leak:latest
+ 
+sleep 120
+docker logs agent-cpu
+docker rm -f agent-cpu
+```
+
+## Deadlock 테스트 + 증거 수집
+ 
+```bash
+docker rm -f agent-deadlock 2>/dev/null
+mkdir -p deadlock_evidence
+ 
+docker run -d \
+  -e MULTI_THREAD_ENABLE=true \
+  -e MEMORY_LIMIT=256 \
+  -e CPU_MAX_OCCUPY=80 \
+  --name agent-deadlock \
+  agent-leak:latest
+ 
+sleep 15
+ 
+# 증거1: PID
+docker exec agent-deadlock ps -ef | grep agent-app-leak > deadlock_evidence/1_pid.txt
+ 
+# 증거2: CPU/MEM
+docker exec agent-deadlock top -H -b -n 1 > deadlock_evidence/2_cpu_mem.txt
+ 
+# 증거3: WAITING
+docker logs agent-deadlock | grep "WAITING" > deadlock_evidence/3_waiting.txt
+ 
+# 증거4: 전체 로그
+docker logs agent-deadlock > deadlock_evidence/4_full_logs.txt
+ 
+# 확인
+cat deadlock_evidence/1_pid.txt
+cat deadlock_evidence/3_waiting.txt
+ 
+docker rm -f agent-deadlock
+```
+## 정리
+ 
+```bash
+# 모든 컨테이너 삭제
+docker rm -f agent-oom-100 agent-oom-256 agent-cpu agent-deadlock 2>/dev/null
+ 
+# 또는 이미지도 삭제하고 싶으면
+docker rmi agent-leak:latest
+```
 ---
  
 ## 마지막 체크사항
