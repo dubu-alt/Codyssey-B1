@@ -60,6 +60,7 @@ CPU 상승 -> 30% 도달 -> Peak reached -> cooldown -> 다시 상승
 - **역할**: CPU와 보조기억장치(SSD/HDD) 사이의 거대한 속도 차이를 메워주는 완충 지대입니다.
 
 ### 프로세스 메모리 구조
+![메모리 구조](/Codyssey-B1/B1-2/test/screenshot/memory_structure_segments.png)
 
 메모리에 로드된 프로세스는 다음과 같이 방을 나누어 씁니다:
 
@@ -97,7 +98,7 @@ CPU 상승 -> 30% 도달 -> Peak reached -> cooldown -> 다시 상승
 **스레드:** 프로세스가 할당받은 자원을 이용하는 **실행 흐름**의 단위
 
 **프로그램 → 프로세스 → 스레드**
-
+![스레드](/Codyssey-B1/B1-2/test/screenshot/process_execution_flow.png)
 ### 스레드의 필요성
 
 과거에는 프로그램을 실행할 때 실행 시작부터 실행 끝까지 프로세스 하나만을 사용해서 진행했습니다. 하지만 시간이 흐를수록 프로그램이 복잡해지고 프로세스 하나만을 사용해서 프로그램을 실행하기는 벅차게 되었습니다.
@@ -211,7 +212,7 @@ def memory_worker():
 > **현재의 경우 HEAP의 메모리가 계속해서 우상향한다. 초기 메모리 상태로 되돌아오거나 떨어지지 않는다.**
 
 ## 가비지 컬렉션 (Garbage Collection)
-
+![가비지컬렉션](/Codyssey-B1/B1-2/test/screenshot/garbage_collection_works.png)
 ### 비유: 자동 청소부 vs 수동 청소
 
 ```
