@@ -1,0 +1,91 @@
+/* CSS 변수(:root) 활용: 색상, 폰트, 간격 등을 변수로 만들어 한 곳에서 관리
+   -> 값을 바꾸고 싶을 때 여기 한 줄만 수정하면 전체 사이트에 반영됨 */
+:root {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text: #182230;
+  --color-muted: #667085;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-border: #d0d5dd;
+  --color-shadow: rgba(15, 23, 42, 0.12);
+  --font-base: 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 4rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.5rem;
+  --header-height: 4.5rem;
+  --transition: 180ms ease;
+}
+
+/* 다크 모드용 CSS 변수 분리 정의
+   [data-theme="dark"]는 main.js의 applyTheme()에서 <html> 태그에 부여하는 속성
+   같은 변수 이름을 재정의하기 때문에, 이 스타일 아래에서 var(--color-bg) 등을 쓰는
+   모든 곳이 자동으로 다크 모드 색상으로 바뀜 (색상 하드코딩 없이 테마 전환 가능) */
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-muted: #cbd5e1;
+  --color-primary: #60a5fa;
+  --color-primary-dark: #3b82f6;
+  --color-border: #334155;
+  --color-shadow: rgba(0, 0, 0, 0.35);
+}
+
+/* box-sizing: border-box를 전역 적용 -> padding/border가 width 계산에 포함되어 레이아웃 계산이 쉬워짐 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* 네비게이션 앵커 클릭 시 부드러운 스크롤 구현의 핵심 CSS 속성 */
+  scroll-behavior: smooth;
+  /* 고정된 헤더(sticky header)에 콘텐츠가 가려지지 않도록 스크롤 목적지 위치를 헤더 높이만큼 보정 */
+  scroll-padding-top: var(--header-height);
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-base);
+  line-height: 1.7;
+}
+
+img {
+  display: block;
+  max-width: 100%; /* 반응형 이미지: 부모 요소 너비를 넘지 않도록 제한 */
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit; /* 폼 요소들이 body의 폰트를 상속받도록 강제 (브라우저 기본 폰트로 깨지는 것 방지) */
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}

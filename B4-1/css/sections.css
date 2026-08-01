@@ -1,0 +1,170 @@
+/* Hero 섹션: 화면 세로 중앙 정렬 (헤더 높이를 뺀 나머지 영역을 100%로 채움) */
+.hero {
+  min-height: calc(100vh - var(--header-height));
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 22%, transparent), transparent 32rem),
+    var(--color-bg);
+}
+
+.hero__content {
+  max-width: 820px;
+  text-align: center;
+}
+
+.hero h1 {
+  margin-bottom: var(--space-lg);
+  font-size: clamp(2.5rem, 8vw, 5.5rem); /* clamp(최소, 유동값, 최대): 화면 크기에 따라 자동으로 폰트 크기 조절 (반응형) */
+  letter-spacing: -0.06em;
+}
+
+/* [보너스] data-typing 텍스트가 들어가는 span에 포인트 컬러 적용 */
+.hero h1 span {
+  color: var(--color-primary);
+}
+
+.hero__description {
+  max-width: 680px;
+  margin-inline: auto;
+  color: var(--color-muted);
+  font-size: 1.15rem;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+.eyebrow {
+  color: var(--color-primary);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.about p,
+.contact p {
+  color: var(--color-muted);
+}
+
+.check-list {
+  display: grid;
+  gap: var(--space-sm);
+  padding-left: 1.25rem;
+}
+
+.profile-card {
+  overflow: hidden;
+  margin: 0;
+  padding: var(--space-lg);
+  text-align: center;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+.profile-card img {
+  width: min(320px, 100%);
+  margin-inline: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px var(--color-shadow);
+  transition: transform var(--transition);
+}
+
+.profile-card img:hover {
+  transform: scale(1.03);
+}
+
+.profile-card figcaption {
+  margin-top: var(--space-md);
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+/* Skills/Projects 카드에 Grid(auto-fit, minmax) 활용
+   - auto-fit: 가능한 만큼 열을 자동으로 채움
+   - minmax(240px, 1fr): 각 열은 최소 240px, 남는 공간은 균등하게 분배
+   -> 별도의 미디어쿼리 없이도 화면 너비에 따라 열 개수가 자동으로 조절되는 반응형 그리드 */
+.skills-grid,
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.project-card {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+}
+
+.project-card p {
+  color: var(--color-muted);
+}
+
+/* 카드 하단에 언어/스타/포크 정보를 고정 (margin-top: auto로 flex 컨테이너 맨 아래로 밀어냄) */
+.project-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: auto;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+/* 로딩/에러/빈 상태 텍스트 영역. min-height를 지정해 상태가 바뀌어도 레이아웃이 흔들리지 않게 함 */
+.project-status {
+  min-height: 2rem;
+  color: var(--color-muted);
+}
+
+.contact-form {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+}
+
+.form-field {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.form-field label {
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 0.85rem 1rem;
+}
+
+/* 포커스 시 아웃라인 강조 (키보드 사용자를 위한 접근성 고려) */
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border-color: var(--color-primary);
+}
+
+/* 입력 필드 근처 에러 메시지 스타일. min-height로 에러가 없을 때도 공간을 미리 확보해 레이아웃이 튀지 않게 함 */
+.error-message {
+  min-height: 1.25rem;
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+/* 유효성 검사 통과 시 표시되는 성공 메시지 스타일 */
+.success-message {
+  min-height: 1.5rem;
+  color: #16a34a;
+  font-weight: 700;
+}

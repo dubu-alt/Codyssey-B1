@@ -1,0 +1,136 @@
+.brand {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+/* 버튼류 요소에 공통 hover 전환 효과(transition)를 적용하기 위한 공통 선택자 묶음 */
+.button,
+.filter-button,
+.theme-toggle,
+.menu-toggle,
+.top-button {
+  border: 0;
+  border-radius: 999px;
+  transition: transform var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+}
+
+.button--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 12px 22px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.button--ghost {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* 버튼 hover 효과: 살짝 위로 떠오르는 느낌을 transform으로 표현 (transition은 위에서 이미 정의됨) */
+.button:hover,
+.filter-button:hover,
+.theme-toggle:hover,
+.top-button:hover {
+  transform: translateY(-2px);
+}
+
+/* 카드 box-shadow 효과: 카드처럼 보이는 요소들에 공통 테두리/그림자 스타일 적용 */
+.card,
+.profile-card,
+.contact-form,
+.project-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 18px 40px var(--color-shadow);
+}
+
+.card,
+.project-card {
+  padding: var(--space-lg);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+/* 카드 hover 효과: 그림자가 더 진해지고 위로 떠오르는 인터랙션 */
+.card:hover,
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 54px var(--color-shadow);
+}
+
+.theme-toggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+/* 모바일 햄버거 메뉴 버튼: 데스크톱에서는 숨기고(display: none),
+   responsive.css의 768px 미디어쿼리에서 display: block으로 다시 보이게 함 */
+.menu-toggle {
+  display: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.menu-toggle span {
+  display: block;
+  width: 1.25rem;
+  height: 2px;
+  margin: 4px auto;
+  background: var(--color-text);
+}
+
+/* 스크롤 300px 이상 시 나타나는 top 버튼
+   기본적으로는 화면 우하단에 고정되어 있지만 opacity:0 + pointer-events:none으로 숨겨진 상태 */
+.top-button {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 30;
+  width: 3rem;
+  height: 3rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* main.js가 scrollY >= 300일 때 부여하는 클래스 -> 버튼이 서서히 나타나고 클릭 가능해짐 */
+.top-button.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* [보너스] 프로젝트 언어 필터 버튼들을 감싸는 컨테이너 (Flexbox로 줄바꿈 가능하게 배치) */
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin: var(--space-lg) 0;
+}
+
+.filter-button {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* main.js의 applyProjectFilter()가 현재 선택된 필터 버튼에 부여하는 클래스 */
+.filter-button.is-active {
+  background: var(--color-primary);
+  color: #ffffff;
+}

@@ -1,0 +1,67 @@
+/* 콘텐츠의 최대 너비를 잡아주는 공통 래퍼. min()으로 화면이 좁으면 여백만, 넓으면 1120px로 고정 */
+.container {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.section {
+  padding: var(--space-2xl) 0;
+}
+
+/* 스크롤 시 네비게이션 배경색 변경 대상이 되는 헤더
+   position: sticky + top: 0 으로 스크롤해도 항상 화면 상단에 고정됨 */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20; /* 다른 콘텐츠보다 위에 그려지도록 */
+  height: var(--header-height);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent); /* 반투명 배경 (스크롤 전 기본 상태) */
+  border-bottom: 1px solid transparent;
+  backdrop-filter: blur(16px); /* 헤더 뒤 콘텐츠를 흐리게 처리해 가독성 향상 */
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+/* main.js의 updateScrollUi()가 scrollY >= 60일 때 부여하는 클래스
+   -> 반투명했던 배경이 불투명한 surface 색상으로 바뀌며 그림자가 생김 */
+.site-header.is-scrolled {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 12px 30px var(--color-shadow);
+}
+
+.navbar,
+.footer-content,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.navbar {
+  height: 100%;
+}
+
+/* 네비게이션에 Flexbox 활용: 메뉴 항목들을 가로로 정렬하고 간격을 균일하게 유지 */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* About/Contact 섹션처럼 텍스트와 이미지를 좌우로 나누는 2단 그리드 레이아웃 */
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+
+.site-footer {
+  padding: var(--space-xl) 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
