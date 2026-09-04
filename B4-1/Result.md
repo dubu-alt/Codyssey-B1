@@ -585,7 +585,7 @@ ufw --force enable
 
 ```bash
 # 1. 맥 터미널(컨테이너 밖)에서 파일 복사
-docker cp ~/Desktop/Codyssey-B1/B1-1/agent-app mission:/home/agent-admin/agent-app/agent-app
+docker cp ~/Desktop/Codyssey-B1/B4-1/agent-app mission:/home/agent-admin/agent-app/agent-app
 
 # 2. 컨테이너 재진입
 docker exec -it mission /bin/bash

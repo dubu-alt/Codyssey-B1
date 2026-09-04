@@ -1,4 +1,4 @@
-# B1-2 트러블슈팅 미션 리포트
+# B4-2 트러블슈팅 미션 리포트
 
 이 문서는 `agent-app-leak` 실행 중 관찰한 OOM, CPU 과점유, Deadlock 장애를 평가 기준에 맞춰 정리한 최종 README입니다. 각 장애는 GitHub Issue 구조인 **현상 -> 증거 -> 원인 -> 조치** 흐름으로 작성했고, 마지막에는 평가항목 9~20에 답할 수 있도록 운영/진단 관점의 설명을 별도로 정리했습니다.
 
@@ -439,7 +439,7 @@ Deadlock 재현 로그:
 ### E. 프로세스 상태 (ps 명령 - 실제 테스트에서)
 
 ```
-vnkers948441@c6r6s1 B1-2 % docker exec agent-deadlock ps -ef | grep agent-app-leak
+vnkers948441@c6r6s1 B4-2 % docker exec agent-deadlock ps -ef | grep agent-app-leak
 agentus+       1       0  0 03:41 ?        00:00:00 /opt/b1-2/agent-app-leak
 agentus+       8       1  1 03:41 ?        00:00:00 /opt/b1-2/agent-app-leak
 ```

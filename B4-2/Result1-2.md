@@ -1,7 +1,7 @@
 # 구조 확인
 ```bash
-B1-2/
-├── B1-2 Concept.md
+B4-2/
+├── B4-2 Concept.md
 ├── Dockerfile
 ├── README.md
 ├── Result1-2.md

@@ -114,7 +114,7 @@ Agent READY
 ### E. 프로세스 상태 (ps 명령 - 실제 테스트에서)
 
 ```
-vnkers948441@c6r6s1 B1-2 % docker exec agent-deadlock ps -ef | grep agent-app-leak
+vnkers948441@c6r6s1 B4-2 % docker exec agent-deadlock ps -ef | grep agent-app-leak
 agentus+       1       0  0 03:41 ?        00:00:00 /opt/b1-2/agent-app-leak
 agentus+       8       1  1 03:41 ?        00:00:00 /opt/b1-2/agent-app-leak
 ```

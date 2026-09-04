@@ -336,7 +336,7 @@ MULTI_THREAD_ENABLE=True
                     ▼
               SIGKILL → OOM 
 ```
-# B1-2 02번, 03번 이슈에 필수 개념
+# B4-2 02번, 03번 이슈에 필수 개념
 
 ---
 
