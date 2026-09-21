@@ -155,6 +155,11 @@ class CommandRunner:
 
     def cmd_path(self, hash1: str, hash2: str) -> str:
         """PATH 명령. 두 커밋 사이 무방향 최단 경로."""
+
+        # 존재하지 않는 해시가 하나라도 존재하면 길이 없으므로 No path 출력
+        if hash1 not in self.repo.commits or hash2 not in self.repo.commits:
+            return "No Path"
+        
         start = self.repo.get_commit(hash1)    # 없는 hash면 오류 메시지
         target = self.repo.get_commit(hash2)
         self._children = self.repo.children_map()  # 자식 방향 지도 준비
