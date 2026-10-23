@@ -13,6 +13,7 @@
 - [B5-1 파일 가기](./B5-1/)  — 정보를 엄청 빠르게 찾아주는 작은 저장소 만들기 (Mini Redis)
 - [B5-2 파일 가기](./B5-2/)  — 파일이 언제 어떻게 바뀌었는지 기록하는 작은 프로그램 만들기 (Mini Git)
 - [B6-1 파일 가기](./B6-1/)  — SNS 데이터베이스 스키마 설계 및 SQL 실습
+- [B7-1 파일 가기](./B7-1/)  — 웹 기반 AI 챗봇 서비스 (Chatlog)
 
 > ⓘ 2026-09-04 기준 코디세이 학습로드맵의 미션 번호 체계가 다시 개편되어, 위 목록은 새 번호에 맞춰 재정렬한 것입니다 (내용은 그대로, 폴더명/번호만 변경).
 
@@ -124,4 +125,20 @@ B6-1 (SNS 데이터베이스 스키마 설계 및 SQL 실습)
 ├── Relationship.png       # ER 관계도
 ├── SQL Diagram.png        # SQL 다이어그램
 └── Screenshot/            # 쿼리 실행 스크린샷 (Q1~Q17)
+
+B7-1 (웹 기반 AI 챗봇 서비스, Chatlog)
+├── README.md              # 프로젝트 설명 및 실행 방법
+├── .gitignore             # .env, *.db, .venv, node_modules 등 제외 규칙
+├── .github/               # 이슈/PR 템플릿, 자동 할당 워크플로우
+├── backend/               # FastAPI 백엔드
+│   ├── app/                    # config, database, main + core/crud/models/routers/schemas/services
+│   ├── scripts/                # 운영 보조 스크립트
+│   ├── tests/                  # pytest 테스트
+│   └── requirements*.txt       # 의존성 목록
+├── frontend/              # React + TypeScript (Vite) 프론트엔드
+│   ├── src/                    # api, components, hooks, utils 등 화면 코드
+│   ├── public/                 # 정적 리소스
+│   ├── Caddyfile               # 배포용 정적 서버 설정
+│   └── .env.*.example          # 환경변수 예시 (실제 .env 는 커밋되지 않음)
+└── docs/                  # 시나리오·아키텍처·API·DB·UI/UX·배포·검증·보안 리뷰 문서
 ```
